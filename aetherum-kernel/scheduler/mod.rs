@@ -1,5 +1,5 @@
-use spin::Mutex;
 use crate::telemetry;
+use spin::Mutex;
 
 type TaskId = usize;
 type TaskFn = fn();
@@ -9,7 +9,7 @@ pub struct Task {
     id: TaskId,
     func: TaskFn,
     // AI-enhanced fields
-    cpu_burst_pred: u32,  // AIKLE: placeholder
+    cpu_burst_pred: u32, // AIKLE: placeholder
 }
 
 static RUNQ: Mutex<[Option<Task>; 64]> = Mutex::new([None; 64]);
@@ -24,12 +24,18 @@ pub fn spawn(f: TaskFn) {
     unsafe {
         let id = NEXT_ID;
         NEXT_ID += 1;
-        q[id] = Some(Task { id, func: f, cpu_burst_pred: 0 });
+        q[id] = Some(Task {
+            id,
+            func: f,
+            cpu_burst_pred: 0,
+        });
     }
 }
 
 pub fn yield_now() {
-    // AIKLE: placeholder — record telemetry before switch
+    // In this toy scheduler we simply record a yield event
+    telemetry::record_task_switch(u32::MAX);
+    core::hint::spin_loop();
 }
 
 pub fn run() -> ! {
