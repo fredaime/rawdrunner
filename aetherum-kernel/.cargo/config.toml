@@ -1,0 +1,10 @@
+[target.'cfg(target_arch = "x86_64")']
+runner = "bootimage runner"
+rustflags = [
+  "-C", "link-arg=-Tlinker.ld",
+  "-C", "relocation-model=static",
+  "-C", "force-frame-pointers=yes",
+]
+
+[build]
+target = "x86_64-unknown-none"
