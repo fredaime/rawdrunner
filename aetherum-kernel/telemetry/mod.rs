@@ -9,15 +9,36 @@ pub struct Sample {
     arg0: u32,
 }
 
-static RING: Mutex<[Sample; RING_LEN]> = Mutex::new([Sample{tsc:0,event:0,arg0:0}; RING_LEN]);
+static RING: Mutex<[Sample; RING_LEN]> = Mutex::new(
+    [Sample {
+        tsc: 0,
+        event: 0,
+        arg0: 0,
+    }; RING_LEN],
+);
 static mut HEAD: usize = 0;
 
 pub fn init() {
-    // AIKLE: placeholder — maybe map buffer to user space later
+    // Reset ring buffer at boot
+    let mut ring = RING.lock();
+    for slot in ring.iter_mut() {
+        *slot = Sample {
+            tsc: 0,
+            event: 0,
+            arg0: 0,
+        };
+    }
+    unsafe {
+        HEAD = 0;
+    }
 }
 
 pub fn record_task_switch(task_id: u32) {
-    push(Sample { tsc: rdtsc(), event: 1, arg0: task_id });
+    push(Sample {
+        tsc: rdtsc(),
+        event: 1,
+        arg0: task_id,
+    });
 }
 
 fn push(s: Sample) {
@@ -33,6 +54,8 @@ fn push(s: Sample) {
 fn rdtsc() -> u64 {
     let low: u32;
     let high: u32;
-    unsafe { core::arch::asm!("rdtsc", out("eax") low, out("edx") high); }
+    unsafe {
+        core::arch::asm!("rdtsc", out("eax") low, out("edx") high);
+    }
     ((high as u64) << 32) | (low as u64)
 }
