@@ -1,5 +1,5 @@
-#![no_std]
-#![no_main]
+#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(test), no_main)]
 
 use bootloader_api::{config::BootloaderConfig, entry_point, info::BootInfo};
 use core::fmt::Write;
@@ -42,6 +42,7 @@ mod serial {
     }
 }
 
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("KERNEL PANIC: {info}");
@@ -56,8 +57,10 @@ const BOOT_CFG: BootloaderConfig = {
 };
 
 // Boot entry-point
+#[cfg(not(test))]
 entry_point!(kernel_main, config = &BOOT_CFG);
 
+#[cfg(not(test))]
 fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     arch::init(boot_info);
     memory::init(boot_info);
